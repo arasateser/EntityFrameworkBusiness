@@ -28,7 +28,15 @@ builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
 // Add services to the container.
 builder.Services.AddControllers();
 
-builder.Services.AddCors();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        builder => builder
+            .WithOrigins("http://localhost:4200") // Replace with your frontend origins
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()); // If you're sending cookies/auth headers
+});
 
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -70,9 +78,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors(builder=>builder.WithOrigins("http://localhost:4200").AllowAnyHeader());
+app.ConfigureCustomExceptionMiddleware();
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowSpecificOrigin"); // Use the CORS policy
 
 app.UseAuthentication();
 

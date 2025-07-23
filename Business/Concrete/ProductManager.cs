@@ -27,13 +27,13 @@ namespace Business.Concrete
         }
 
         //[SecuredOperation("product.add,admin")]
-        //[ValidationAspect(typeof(ProductValidator))]
-        [CacheRemoveAspect("IProductService.GetAll")]
+        [ValidationAspect(typeof(ProductValidator))]
+        //[CacheRemoveAspect("IProductService.GetAll")]
         public IResult Add(Product product)
         {
             var result = BusinessRules.Run(CheckIfProductCountOfCategoryCorrect(product.CategoryId)
-                                      , CheckIfProductNameExists(product.ProductName)
-                                      , CheckIfCategoryCountIsLimitExceded(product.CategoryId));
+                                      , CheckIfProductNameExists(product.ProductName) //, CheckIfCategoryCountIsLimitExceded(product.CategoryId)
+                                      );
             if (result != null)
             {
                 return new ErrorResult(result.Message);
@@ -55,10 +55,6 @@ namespace Business.Concrete
 
         public IDataResult<List<Product>> GetAllByCategoryId(int id)
         {
-            if (DateTime.Now.Hour >= 17)
-            {
-                return new ErrorDataResult<List<Product>>(Messages.MaintenanceTime);
-            }
             return new SuccessDataResult<List<Product>>(_productDal.GetAll(p => p.CategoryId == id));
         }
 
@@ -80,28 +76,28 @@ namespace Business.Concrete
             }
             return new SuccessDataResult<List<ProductDetailDto>>(_productDal.GetProductDetails());
         }
-        [ValidationAspect(typeof(ProductValidator))]
+        //[ValidationAspect(typeof(ProductValidator))]
         public IResult Update(Product product)
         {
             var categoryCount = _productDal.GetAll(p => p.CategoryId == product.CategoryId).Count;
-            int maxPerCategoryCount = 10;
+            int maxPerCategoryCount = 100;
 
-            if (categoryCount >= maxPerCategoryCount)
-            {
-                return new ErrorResult(Messages.ProductCountOfCategoryError);
-            }
+            //if (categoryCount >= maxPerCategoryCount)
+            //{
+            //    return new ErrorResult(Messages.ProductCountOfCategoryError);
+            //}
             throw new NotImplementedException();
         }
 
         private IResult CheckIfProductCountOfCategoryCorrect(int categoryId)
         {
             var categoryCount = _productDal.GetAll(p => p.CategoryId == categoryId).Count;
-            int maxPerCategoryCount = 10;
+            //int maxPerCategoryCount = 10;
 
-            if (categoryCount >= maxPerCategoryCount)
-            {
-                return new ErrorResult(Messages.ProductCountOfCategoryError);
-            }
+            //if (categoryCount >= maxPerCategoryCount)
+            //{
+            //    return new ErrorResult(Messages.ProductCountOfCategoryError);
+            //}
             return new SuccessResult("ARAS ATEŞER");
         }
 
@@ -118,14 +114,14 @@ namespace Business.Concrete
         private IResult CheckIfCategoryCountIsLimitExceded(int categoryId)
         {
             var resut = _categoryService.GetAll();
-            if (resut.Data.Count > 15)
+            if (resut.Data.Count > 150)
             {
                 return new ErrorResult(Messages.CategoryLimitExceded);
             }
             return new SuccessResult();
         }
 
-        [TransactionScopeAspect]
+        //[TransactionScopeAspect]
         public IResult AddTransactionalTest(Product product)
         {
             Add(product);
